@@ -29,22 +29,21 @@ def load_image(name, color_key=None):
 
 class Valve(pygame.sprite.Sprite):
     """Generate valve symbol"""
-    def __init__(self, position, *groups):
+    def __init__(self, *groups):
         super().__init__(*groups)
         self.image = pygame.image.load(str(data_dir) + "/Valve.png")
         self.rect = self.image.get_rect()
         self.area = screen.get_rect()
-        self.position = position
-        self.change_position(self.position)
+        self.position = False
 
-    def change_position(self, position):
+    def change_position(self):
         """Fully open or close a valve"""
-        if position is True:
+        if self.position:
             self.image = pygame.image.load(str(data_dir) + "/open_valve.png")
-        elif position is False:
-            self.image = pygame.image.load(str(data_dir) + "/close_valve.png")
         else:
-            raise ValueError("Invalid position provided")
+            self.image = pygame.image.load(str(data_dir) + "/close_valve.png")
+        # else:
+        #     raise ValueError("Invalid position provided")
 
 
 if __name__ == "__main__":
@@ -58,11 +57,13 @@ if __name__ == "__main__":
     screen.blit(background, (0, 0))
     pygame.display.flip()
 
-    valve = Valve(False)
+    clock = pygame.time.Clock()
+    valve = Valve()
     all_sprites = pygame.sprite.RenderPlain(valve)
 
     run = True
     while run:
+        clock.tick(60)
         for event in pygame.event.get():
             if event.type == QUIT:
                 run = False
@@ -70,9 +71,10 @@ if __name__ == "__main__":
                 run = False
             elif event.type == MOUSEBUTTONDOWN:
                 if valve.position is False:
-                    valve.change_position(True)
+                    valve.position = True
                 elif valve.position is True:
-                    valve.change_position(False)
+                    valve.position = False
+                valve.change_position()
 
         all_sprites.update()
 
