@@ -8,15 +8,14 @@ from pygame.locals import *
 main_dir = Path(".")
 main_dir = main_dir.resolve()  # Convert to absolute path
 data_dir = Path(PurePath(main_dir).joinpath("data"))
-data_dir = data_dir.resolve()
+data_dir = data_dir.resolve()  # Convert to absolute path
 
 
 def load_image(name, color_key=None):
-    """Load named image"""
+    """Load named image. Assumes image is in 'data' directory."""
     full_name = Path(PurePath(data_dir).joinpath(name))
     try:
-        # image = pygame.image.load(full_name.resolve())
-        image = pygame.image.load("HMI_test/data/Valve.svg")
+        image = pygame.image.load(full_name.resolve())
     except pygame.error:
         print(f"Cannot load image {image}")
         raise SystemExit(str(pygame.get_error()))
@@ -30,16 +29,22 @@ def load_image(name, color_key=None):
 
 class Valve(pygame.sprite.Sprite):
     """Generate valve symbol"""
-    def __init__(self, *groups):
+    def __init__(self, position, *groups):
         super().__init__(*groups)
-        # self.image = load_image("Valve.svg")
-        self.image = pygame.image.load("/home/codyjackson/PycharmProjects/PyGame-HMI/HMI_test/data/Valve.png")
+        self.image = pygame.image.load(str(data_dir) + "/Valve.png")
         self.rect = self.image.get_rect()
         self.area = screen.get_rect()
-        # self.rect.topleft = 300, 200
+        self.position = position
+        self.change_position(self.position)
 
-    def change_position(self):
-        pass
+    def change_position(self, position):
+        """Fully open or close a valve"""
+        if position is True:
+            self.image = pygame.image.load(str(data_dir) + "/open_valve.png")
+        elif position is False:
+            self.image = pygame.image.load(str(data_dir) + "/close_valve.png")
+        else:
+            raise ValueError("Invalid position provided")
 
 
 if __name__ == "__main__":
@@ -53,7 +58,7 @@ if __name__ == "__main__":
     screen.blit(background, (0, 0))
     pygame.display.flip()
 
-    valve = Valve()
+    valve = Valve(False)
     all_sprites = pygame.sprite.RenderPlain(valve)
 
     run = True
@@ -63,6 +68,11 @@ if __name__ == "__main__":
                 run = False
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 run = False
+            elif event.type == MOUSEBUTTONDOWN:
+                if valve.position is False:
+                    valve.change_position(True)
+                elif valve.position is True:
+                    valve.change_position(False)
 
         all_sprites.update()
 
